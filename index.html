@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="LogSID: Detecting Sensitive Information in Large-Scale Logs. Anonymous project page with the paper's method, benchmark, and experimental results.">
+  <meta name="theme-color" content="#ffffff">
+  <title>LogSID: Detecting Sensitive Information in Large-Scale Logs</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <nav class="nav-inner" aria-label="Main navigation">
+      <a class="wordmark" href="#">LogSID</a>
+      <div class="nav-links"><a href="#method">Method</a><a href="#benchmark">Benchmark</a><a href="#results">Results</a><a href="https://github.com/logsid/logsid">Repository <span aria-hidden="true">↗</span></a></div>
+    </nav>
+  </header>
+  <main id="main" class="container">
+    <section class="hero" aria-labelledby="project-title">
+      <h1 id="project-title">LogSID: Detecting Sensitive Information<br class="desktop-break"> in Large-Scale Logs</h1>
+      <p class="authors">Anonymous Authors</p>
+      <p class="hero-summary">LogSID detects sensitive text in individual log messages by combining a learned cache, a small language model, and selective LLM detection. The study constructs a benchmark of <strong>32,983,908 messages from eight sources</strong> and evaluates character-level sensitive-span detection on chronologically held-out logs.</p>
+      <div class="project-links"><a class="button" href="https://github.com/logsid/logsid"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m8 6-6 6 6 6m8-12 6 6-6 6m-2-15-4 18"/></svg>Project Repository</a><a class="button button-light" href="https://zenodo.org/records/23810581?preview=1&amp;token=eyJhbGciOiJIUzUxMiJ9.eyJpZCI6IjUxNWVlNWI3LTE0Y2MtNGIxNC04NWZkLWZiNDI1OGZjZTU2YiIsImRhdGEiOnt9LCJyYW5kb20iOiI0ZGEwMjgxNDhhNjYyODFmOTJiODEyYmVmMzRjZTg3MyJ9.sz5FkmO9MRwItV7NOjViAqVTtTTAG2Ynva1y5sp1xWPKJe60H_i7qClJ-punZawMc1jUzKgJijh9wZiBHQJDZA">Dataset (Zenodo) <span aria-hidden="true">↗</span></a><a class="button button-light" href="#results">Experimental Results <span aria-hidden="true">↓</span></a></div>
+      <p class="release-note">Source code is available on GitHub. Datasets are available on Zenodo.</p>
+    </section>
+    <section class="paper-section" id="abstract" aria-labelledby="abstract-title">
+      <h2 id="abstract-title">Abstract</h2>
+      <p>Logs support troubleshooting and analysis across teams, but sharing them can expose sensitive information. Similar structures can contain different sensitive spans or none at all, making field-format matching or one label assignment per template insufficient. LogSID reuses content-dependent span-localization rules through a learned cache. A small language model handles messages without an accepted cache result; an LLM is invoked only when the small model's complete prediction is not accepted. Historical annotations initialize the cache, train the small model, and calibrate acceptance rules, while online cache updates support subsequent messages without retraining the small model.</p>
+    </section>
+    <section class="paper-section" id="task" aria-labelledby="task-title">
+      <h2 id="task-title">What is the task in LogSID?</h2>
+      <p>Identify the sensitive text and its categories in each log message. The example below shows why two messages with the same pattern can require different predictions.</p>
+      <figure class="paper-figure task-figure"><a class="figure-image-link" href="assets/task-example.png" target="_blank" rel="noopener" aria-label="Open the log sensitivity example at full size"><img src="assets/task-example.png" width="721" height="556" alt="Two BGL messages share a pattern. Only the pseudonym userA in the personal path is annotated as an account identifier. The shared application path has no sensitive annotation."></a><figcaption><strong>Figure 1.</strong> Two BGL messages with the same pattern but different gold labels. Only <code>userA</code> is sensitive in (a); (b) has no annotated sensitive text. The account name is pseudonymized. <a href="assets/task-example.png" target="_blank" rel="noopener">Full-size figure ↗</a></figcaption></figure>
+    </section>
+    <section class="paper-section" id="method" aria-labelledby="method-title">
+      <h2 id="method-title">How does LogSID work?</h2>
+      <p>A message first reaches the detection cache. Only messages without an accepted cache or small-model result proceed to the next stage. Checked model outputs can update the cache for subsequent messages.</p>
+      <figure class="paper-figure"><a class="figure-image-link" href="assets/method-overview.png" target="_blank" rel="noopener" aria-label="Open the LogSID method overview at full size"><img src="assets/method-overview.png" width="1513" height="652" alt="The LogSID method: historical initialization supports a content-dependent detection cache, small language model detection, and selective LLM detection. Accepted predictions produce sensitive spans or an empty set; checked outputs update the cache." loading="lazy"></a><figcaption><strong>Figure 2.</strong> Overview of LogSID. After matching structure, the cache selects span rules from the current content. Solid arrows show detection; dashed arrows show preparation and updates. <a href="assets/method-overview.png" target="_blank" rel="noopener">Full-size figure ↗</a></figcaption></figure>
+    </section>
+    <section class="paper-section" id="benchmark" aria-labelledby="benchmark-title">
+      <h2 id="benchmark-title">The LogSID Benchmark</h2>
+      <p>The benchmark covers eight log sources and annotates sensitive text in both fixed wording and variable values. The taxonomy defines 18 categories; 12 occur in the collected data.</p>
+      <div class="table-title"><strong>Table 1.</strong> Overview of the eight-source benchmark.</div>
+      <p class="table-hint">Scroll horizontally to view all columns →</p>
+      <div class="table-scroll" role="region" aria-label="Benchmark overview table; scroll horizontally on small screens" tabindex="0"><table class="paper-table benchmark-table"><thead><tr><th scope="col">Source</th><th scope="col">Logs</th><th scope="col">Templates</th><th scope="col">Sensitive (%)</th><th scope="col">Categories</th><th scope="col">Mixed</th><th scope="col">Varying</th></tr></thead><tbody>
+<tr><th scope="row">Zanbil</th><td>10,365,152</td><td>11</td><td>100.00</td><td>9</td><td>0</td><td>6</td></tr>
+<tr><th scope="row">Apache</th><td>51,978</td><td>29</td><td>59.81</td><td>2</td><td>0</td><td>0</td></tr>
+<tr><th scope="row">AIT-mail</th><td>382,117</td><td>27</td><td>97.81</td><td>4</td><td>1</td><td>1</td></tr>
+<tr><th scope="row">OpenSSH</th><td>638,947</td><td>38</td><td>94.06</td><td>3</td><td>0</td><td>9</td></tr>
+<tr><th scope="row">HealthApp</th><td>212,394</td><td>156</td><td>83.99</td><td>4</td><td>0</td><td>0</td></tr>
+<tr><th scope="row">Mac</th><td>100,314</td><td>626</td><td>4.94</td><td>5</td><td>3</td><td>8</td></tr>
+<tr><th scope="row">BGL</th><td>4,631,261</td><td>320</td><td>3.04</td><td>2</td><td>11</td><td>11</td></tr>
+<tr><th scope="row">Thunderbird</th><td>16,601,745</td><td>1,241</td><td>20.61</td><td>5</td><td>4</td><td>18</td></tr>
+<tr><th scope="row"><strong>Total</strong></th><td><strong>32,983,908</strong></td><td><strong>2,448</strong></td><td><strong>45.83</strong></td><td><strong>12</strong></td><td><strong>19</strong></td><td><strong>53</strong></td></tr>
+      </tbody></table></div>
+      <p class="table-note"><strong>Sensitive (%):</strong> messages with at least one sensitive annotation. <strong>Categories:</strong> observed categories; the total is the union across sources. <strong>Mixed:</strong> templates containing both sensitive and non-sensitive messages. <strong>Varying:</strong> templates with varying category presence. AIT-mail contains simulated-user activity on real services in a testbed.</p>
+    </section>
+    <section class="paper-section" id="results" aria-labelledby="results-title">
+      <h2 id="results-title">Experimental Results</h2>
+      <p>Evaluation uses the chronologically held-out 80% of each source: <strong>26,387,130 test messages</strong> in total. Precision, recall, and F1 require strict agreement on span boundaries and category.</p>
+      <div class="table-title"><strong>Table 2.</strong> Detection effectiveness on the held-out test messages (%).</div>
+      <p class="table-hint">Scroll horizontally to view all columns →</p>
+      <div class="table-scroll results-scroll" role="region" aria-label="Detection results by source and method; scroll horizontally on small screens" tabindex="0"><table class="paper-table results-table"><thead><tr><th scope="col" rowspan="2">Source</th><th scope="colgroup" colspan="3">SDLog</th><th scope="colgroup" colspan="3">UNLEASH</th><th scope="colgroup" colspan="3">GLiNER-PII</th><th scope="colgroup" colspan="3">Presidio</th><th scope="colgroup" colspan="3" class="method-column">LogSID</th></tr><tr><th scope="col">P</th><th scope="col">R</th><th scope="col">F1</th><th scope="col">P</th><th scope="col">R</th><th scope="col">F1</th><th scope="col">P</th><th scope="col">R</th><th scope="col">F1</th><th scope="col">P</th><th scope="col">R</th><th scope="col">F1</th><th scope="col" class="method-column">P</th><th scope="col" class="method-column">R</th><th scope="col" class="method-column">F1</th></tr></thead><tbody>
+<tr><th scope="row">Zanbil</th><td><span class="second-best">99.251</span></td><td><span class="second-best">95.740</span></td><td><span class="second-best">97.464</span></td><td>94.237</td><td>92.164</td><td>93.189</td><td>—</td><td>—</td><td>—</td><td>7.188</td><td>34.734</td><td>11.911</td><td><strong>99.974</strong></td><td><strong>98.349</strong></td><td><strong>99.155</strong></td></tr>
+<tr><th scope="row">Apache</th><td><strong>99.994</strong></td><td><strong>99.998</strong></td><td><strong>99.996</strong></td><td>99.647</td><td>99.923</td><td>99.785</td><td>0.000</td><td>0.000</td><td>0.000</td><td>75.564</td><td>50.000</td><td>60.180</td><td><span class="second-best">99.977</span></td><td><span class="second-best">99.981</span></td><td><span class="second-best">99.979</span></td></tr>
+<tr><th scope="row">AIT-mail</th><td>99.524</td><td><span class="second-best">76.114</span></td><td>86.259</td><td><strong>99.630</strong></td><td><span class="second-best">76.114</span></td><td><span class="second-best">86.299</span></td><td>8.453</td><td>3.698</td><td>5.145</td><td>2.388</td><td>1.284</td><td>1.670</td><td><span class="second-best">99.583</span></td><td><strong>96.743</strong></td><td><strong>98.142</strong></td></tr>
+<tr><th scope="row">OpenSSH</th><td><span class="second-best">98.868</span></td><td><span class="second-best">54.342</span></td><td><span class="second-best">70.135</span></td><td>88.081</td><td>47.975</td><td>62.117</td><td>6.629</td><td>2.906</td><td>4.041</td><td>61.522</td><td>44.836</td><td>51.870</td><td><strong>98.938</strong></td><td><strong>99.947</strong></td><td><strong>99.440</strong></td></tr>
+<tr><th scope="row">HealthApp</th><td><span class="second-best">98.719</span></td><td><strong>99.047</strong></td><td><strong>98.883</strong></td><td>85.443</td><td>75.424</td><td>80.121</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td><strong>99.937</strong></td><td><span class="second-best">96.501</span></td><td><span class="second-best">98.189</span></td></tr>
+<tr><th scope="row">Mac</th><td>52.108</td><td><span class="second-best">59.120</span></td><td><span class="second-best">55.393</span></td><td><span class="second-best">52.446</span></td><td>46.590</td><td>49.345</td><td>5.777</td><td>14.384</td><td>8.243</td><td>3.031</td><td>51.718</td><td>5.727</td><td><strong>98.988</strong></td><td><strong>88.925</strong></td><td><strong>93.687</strong></td></tr>
+<tr><th scope="row">BGL</th><td>0.000</td><td>0.000</td><td>0.000</td><td><span class="second-best">10.062</span></td><td><span class="second-best">9.009</span></td><td><span class="second-best">9.507</span></td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td><strong>61.575</strong></td><td><strong>84.318</strong></td><td><strong>71.174</strong></td></tr>
+<tr><th scope="row">Thunderbird</th><td><span class="second-best">98.913</span></td><td><strong>82.049</strong></td><td><strong>89.695</strong></td><td>7.126</td><td>16.467</td><td>9.947</td><td>1.216</td><td>1.363</td><td>1.285</td><td>0.119</td><td>0.200</td><td>0.149</td><td><strong>99.982</strong></td><td><span class="second-best">74.618</span></td><td><span class="second-best">85.458</span></td></tr>
+<tr><th scope="row">Mean</th><td><span class="second-best">80.922</span></td><td><span class="second-best">70.801</span></td><td><span class="second-best">74.728</span></td><td>67.084</td><td>57.958</td><td>61.289</td><td>3.154</td><td>3.193</td><td>2.674</td><td>18.727</td><td>22.847</td><td>16.438</td><td><strong>94.869</strong></td><td><strong>92.423</strong></td><td><strong>93.153</strong></td></tr>
+      </tbody></table></div>
+      <p class="table-note"><strong>Bold</strong> and <span class="second-best">underlined</span> values indicate the best and second-best results. Mean P/R/F1 are averaged separately with equal weight per source. GLiNER-PII includes seven available sources; other methods include all eight. <strong>—</strong> denotes an evaluation excluded because full-test detection was projected to exceed six hours; it provides no measured timeout or score. SDLog and UNLEASH use the task adaptations evaluated in the paper.</p>
+      <p class="result-summary">LogSID achieves <strong>93.15% mean source F1</strong>. Its advantage varies by workload: SDLog is stronger on Apache, HealthApp, and Thunderbird, while LogSID improves over SDLog on the other five sources.</p>
+      <div class="result-figures">
+        <figure class="paper-figure"><h3>Context-sensitive decisions</h3><a class="figure-image-link" href="assets/context-comparison.png" target="_blank" rel="noopener" aria-label="Open the context-sensitive detection comparison at full size"><img src="assets/context-comparison.png" width="849" height="646" alt="Strict-span F1 comparison between SDLog and LogSID for mixed-sensitivity and changing-category groups from the same test messages." loading="lazy"></a><figcaption><strong>Figure 3.</strong> SDLog and LogSID on the same test groups. Higher strict-span F1 is better. Groups may overlap; groups with no test messages are omitted. <a href="assets/context-comparison.png" target="_blank" rel="noopener">Full-size figure ↗</a></figcaption></figure>
+        <figure class="paper-figure"><h3>Detection time</h3><a class="figure-image-link" href="assets/detection-time.png" target="_blank" rel="noopener" aria-label="Open the detection time comparison at full size"><img src="assets/detection-time.png" width="1005" height="495" alt="Average measured detection time across eight test sources, in seconds: LogSID 412.8, SDLog 2854.4, UNLEASH 3140.1, and Presidio 9292.9." loading="lazy"></a><figcaption><strong>Figure 4.</strong> Average detection time across eight sources. All four methods report measured mean durations. <a href="assets/detection-time.png" target="_blank" rel="noopener">Full-size figure ↗</a></figcaption></figure>
+      </div>
+    </section>
+  </main>
+  <footer><div class="container footer-inner"><span>LogSID · Anonymous research project</span><a href="#">Back to top ↑</a></div></footer>
+</body>
+</html>
